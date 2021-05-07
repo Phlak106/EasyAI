@@ -13,6 +13,7 @@
     </Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeContentInPack>false</IncludeContentInPack>
+    <ContentTargetFolders>content</ContentTargetFolders>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,5 +24,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\EasyAI.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_PackageFiles Include="FasterRCNN-10.onnx">
+        <BuildAction>None</BuildAction>
+    </_PackageFiles>
   </ItemGroup>
 </Project>
