@@ -4,6 +4,17 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PackageId>EasyAI.Common</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Chris Sherry</Authors>
+    <Description>
+        Shared library for EasyAI.
+    </Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeContentInPack>false</IncludeContentInPack>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.7.0" />
     <PackageReference Include="OpenCvSharp4" Version="4.5.2.20210404" />
