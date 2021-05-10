@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>EasyAI.FasterRCNN</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Chris Sherry</Authors>
+    <Description>
+        EasyAI library wrapping ONNX's Faster RCNN implementation.
+    </Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <!-- Excludes OpenCV resources from the package -->
+    <IncludeContentInPack>false</IncludeContentInPack>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.7.0" />
+    <PackageReference Include="OpenCvSharp4" Version="4.5.2.20210404" />
+    <PackageReference Include="OpenCvSharp4.runtime.multi-arch" Version="4.3.0.20200527" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\EasyAI.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="FasterRCNN-10.onnx"/>
+  </ItemGroup>
+</Project>
