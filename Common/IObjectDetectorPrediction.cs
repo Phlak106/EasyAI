@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace EasyAI.Common
 {
-    public interface IPrediction
+    public interface IObjectDetectorPrediction
     {
         public IEnumerable<ObjectClass> TopObjectClasses(int n);
         public int NumDetectedClasses();

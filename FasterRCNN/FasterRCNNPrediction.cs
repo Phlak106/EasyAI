@@ -8,7 +8,7 @@ using OpenCvSharp;
 
 namespace EasyAI.Common
 {
-    public class FasterRCNNPrediction : IPrediction
+    public class FasterRCNNPrediction : IObjectDetectorPrediction, IDisposable
     {
         private ConcurrentDictionary<ObjectClass, Rect> detectedObjects = new ConcurrentDictionary<ObjectClass, Rect>();
         private Mat originalImage;
@@ -26,17 +26,23 @@ namespace EasyAI.Common
         // Put boxes, labels and confidence on image
         public byte[] ImageWithBoundingBoxes()
         {
-            Mat withBoundingBoxes = new Mat(originalImage);
-            Parallel.ForEach(detectedObjects.Keys, p =>
-            {
-                Cv2.Rectangle(withBoundingBoxes, detectedObjects[p], Scalar.Red, 2);
-                Cv2.PutText(withBoundingBoxes, $"{p.ClassName}, {p.Confidence:0.00}", detectedObjects[p].TopLeft, HersheyFonts.HersheyPlain, 1, Scalar.White, 1);
-            });
-            return withBoundingBoxes.ToBytes();
+            using (Mat withBoundingBoxes = originalImage.Clone()) {
+                Parallel.ForEach(detectedObjects.Keys, p =>
+                {
+                    Cv2.Rectangle(withBoundingBoxes, detectedObjects[p], Scalar.Red, 2);
+                    Cv2.PutText(withBoundingBoxes, $"{p.ClassName}, {p.Confidence:0.00}", detectedObjects[p].TopLeft, HersheyFonts.HersheyPlain, 1, Scalar.White, 1);
+                });
+                return withBoundingBoxes.ToBytes();
+            }
         }
 
         public int NumDetectedClasses() => detectedObjects.Count;
 
         public IEnumerable<ObjectClass> TopObjectClasses(int n) => detectedObjects.Keys.OrderByDescending(x => x.Confidence).Take(n);
+
+        public void Dispose() 
+        {
+            originalImage.Dispose();
+        }
     }
 }

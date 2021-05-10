@@ -12,8 +12,8 @@
         EasyAI library wrapping ONNX's Faster RCNN implementation.
     </Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <!-- Excludes OpenCV resources from the package -->
     <IncludeContentInPack>false</IncludeContentInPack>
-    <ContentTargetFolders>content</ContentTargetFolders>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,8 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <_PackageFiles Include="FasterRCNN-10.onnx">
-        <BuildAction>None</BuildAction>
-    </_PackageFiles>
+    <EmbeddedResource Include="FasterRCNN-10.onnx"/>
   </ItemGroup>
 </Project>
