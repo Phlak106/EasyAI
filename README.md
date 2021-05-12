@@ -12,3 +12,6 @@ image and return detected objects.
 
 Model packages define their dependencies such as the execution runtime 
 (TensorFlow, ONNX, etc.) and abstract the consumer from these details.
+
+# See Also
+https://github.com/AlturosDestinations/Alturos.Yolo - Same idea, but for only one model.

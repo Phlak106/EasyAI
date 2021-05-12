@@ -38,7 +38,13 @@ namespace EasyAI.Common
 
         public int NumDetectedClasses() => detectedObjects.Count;
 
-        public IEnumerable<ObjectClass> TopObjectClasses(int n) => detectedObjects.Keys.OrderByDescending(x => x.Confidence).Take(n);
+        public IEnumerable<ObjectClass> TopObjectClasses(int n)
+        {
+            if (n < 0) throw new ArgumentOutOfRangeException(nameof(n), "Requested number of classes must be non-negative.");
+            if (n > NumDetectedClasses()) throw new ArgumentOutOfRangeException(nameof(n), "Requested number of classes must not excess the number of detected classes.");
+            
+            return detectedObjects.Keys.OrderByDescending(x => x.Confidence).Take(n);
+        }
 
         public void Dispose() 
         {
