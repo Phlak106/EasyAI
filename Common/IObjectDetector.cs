@@ -13,6 +13,6 @@ namespace EasyAI.Common
         /// <param name="image">The image to search.</param>
         /// <param name="minConfidence">The minimum confidence level to be included in returned objects.</param>
         /// <returns>The detected objects.</returns>
-        IObjectDetectorPrediction DetectObjects(byte[] image, float minConfidence);
+        ObjectDetectorPrediction DetectObjects(byte[] image, float minConfidence);
     }
 }
