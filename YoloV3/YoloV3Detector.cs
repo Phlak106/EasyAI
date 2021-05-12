@@ -9,17 +9,18 @@ using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using OpenCvSharp;
 
-namespace EasyAI.FasterRCNN
+namespace EasyAI.YoloV3
 {
-    public class FasterRCNNDetector : IObjectDetector
+    public class YoloV3Detector : IObjectDetector
     {
-        private static float[] MEAN = { 102.9801f, 115.9465f, 122.7717f };
         private InferenceSession inferenceSession;
         private List<NamedOnnxValue> MODEL_INPUTS = new List<NamedOnnxValue>() { null };
 
-        public FasterRCNNDetector()
+        private static int input_dimension = 416;
+
+        public YoloV3Detector()
         {
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EasyAI.FasterRCNN.FasterRCNN-10.onnx"))
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EasyAI.YoloV3.yolov3-10.onnx"))
             {
                 using (MemoryStream ms = new MemoryStream())
                 {
@@ -30,7 +31,7 @@ namespace EasyAI.FasterRCNN
             }
         }
 
-        public FasterRCNNDetector(string modelFilePath)
+        public YoloV3Detector(string modelFilePath)
         {
             if (String.IsNullOrEmpty(modelFilePath))
                 throw new ArgumentNullException(nameof(modelFilePath));
@@ -48,29 +49,30 @@ namespace EasyAI.FasterRCNN
         }
 
         /// <summary>
-        /// Preprocess the input image according to https://github.com/onnx/models/tree/master/vision/object_detection_segmentation/faster-rcnn
+        /// Preprocess the input image according to https://github.com/onnx/models/tree/master/vision/object_detection_segmentation/yolov3
         /// </summary>
         private Tensor<float> Preprocess(Mat frame)
         {
-            double ratio = Math.Min(800.0 / frame.Width, 800.0 / frame.Height);
+            double ratio = Math.Min((float)input_dimension / frame.Width, (float)input_dimension / frame.Height);
             Cv2.Resize(frame, frame, new OpenCvSharp.Size((ratio * frame.Width), ratio * frame.Height));
             Cv2.CopyMakeBorder(frame, frame,
-                (800 - frame.Height) / 2,
-                (801 - frame.Height) / 2,
-                (800 - frame.Width) / 2,
-                (801 - frame.Width) / 2,
+                (input_dimension - frame.Height) / 2,
+                ((input_dimension+1) - frame.Height) / 2,
+                (input_dimension - frame.Width) / 2,
+                ((input_dimension+1) - frame.Width) / 2,
                 BorderTypes.Constant, new Scalar(0, 0, 0));
 
             var inputArr = new float[3, frame.Height, frame.Width];
             Parallel.For(0, frame.Height, (y, s) =>
+            {
+                for (int x = 0; x < frame.Width; ++x)
                 {
-                    for( int x = 0; x < frame.Width; ++x ) {
-                        var pixel = frame.At<Vec3b>(y, x);
-                        inputArr[0, y, x] = (float)pixel[0] - MEAN[0];
-                        inputArr[1, y, x] = (float)pixel[1] - MEAN[1];
-                        inputArr[2, y, x] = (float)pixel[2] - MEAN[2];
-                    }
-                });
+                    var pixel = frame.At<Vec3b>(y, x);
+                    inputArr[0, y, x] = (float)pixel[0];
+                    inputArr[1, y, x] = (float)pixel[1];
+                    inputArr[2, y, x] = (float)pixel[2];
+                }
+            });
             return inputArr.ToTensor();
         }
 

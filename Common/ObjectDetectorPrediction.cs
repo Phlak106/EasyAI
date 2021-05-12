@@ -3,27 +3,32 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EasyAI.Common;
 using OpenCvSharp;
 
 namespace EasyAI.Common
 {
-    public class FasterRCNNPrediction : IObjectDetectorPrediction, IDisposable
+    /// <summary>
+    /// An class representing the detected objects.
+    /// </summary>
+    public class ObjectDetectorPrediction: IDisposable
     {
         private ConcurrentDictionary<ObjectClass, Rect> detectedObjects = new ConcurrentDictionary<ObjectClass, Rect>();
         private Mat originalImage;
 
-        internal FasterRCNNPrediction(Mat originalImage)
+        public ObjectDetectorPrediction(Mat originalImage)
         {
             this.originalImage = originalImage;
         }
 
-        internal void AddDetectedObject(ObjectClass oc, Rect rec)
+        public void AddDetectedObject(ObjectClass oc, Rect rec)
         {
             detectedObjects.TryAdd(oc, rec);
         }
 
-        // Put boxes, labels and confidence on image
+        /// <summary>
+        /// Generates an image from the original with bounding boxes around the detected objects.
+        /// </summary>
+        /// <returns>Bytes of image with bounding boxes around the detected objects.</returns>
         public byte[] ImageWithBoundingBoxes()
         {
             using (Mat withBoundingBoxes = originalImage.Clone()) {
@@ -36,8 +41,17 @@ namespace EasyAI.Common
             }
         }
 
+        /// <summary>
+        /// Gets the total number of detected objects.
+        /// </summary>
+        /// <returns>The total number of detected objects.</returns>
         public int NumDetectedClasses() => detectedObjects.Count;
 
+        /// <summary>
+        /// Gets the top n detected objects.
+        /// </summary>
+        /// <param name="n">The number of objects to get.</param>
+        /// <returns>An enumerable containing the top n detected objects.</returns>
         public IEnumerable<ObjectClass> TopObjectClasses(int n)
         {
             if (n < 0) throw new ArgumentOutOfRangeException(nameof(n), "Requested number of classes must be non-negative.");
