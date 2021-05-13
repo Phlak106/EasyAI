@@ -86,8 +86,8 @@ namespace EasyAI.YoloV3
             else
                 MODEL_INPUTS[0].Value = input;
 
-            using IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = inferenceSession.Run(MODEL_INPUTS);
             // Postprocess to get predictions
+            using IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = inferenceSession.Run(MODEL_INPUTS);
             var resultsArray = results.ToArray();
             var boxes = resultsArray[0].AsTensor<float>();
             var confidences = resultsArray[1].AsTensor<float>();
