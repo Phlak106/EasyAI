@@ -68,41 +68,46 @@ namespace EasyAI.YoloV3
                 for (int x = 0; x < frame.Width; ++x)
                 {
                     var pixel = frame.At<Vec3b>(y, x);
-                    inputArr[0, y, x] = (float)pixel[0];
-                    inputArr[1, y, x] = (float)pixel[1];
-                    inputArr[2, y, x] = (float)pixel[2];
+                    inputArr[0, y, x] = (float)pixel[0] / 255f;
+                    inputArr[1, y, x] = (float)pixel[1] / 255f;
+                    inputArr[2, y, x] = (float)pixel[2] / 255f;
                 }
             });
-            return inputArr.ToTensor();
+            return inputArr.ToTensor().Reshape(new int[] {1, 3, frame.Height, frame.Width });
         }
 
         private ObjectDetectorPrediction Inference(Tensor<float> input, Mat frame, float minScore = 0.7f)
         {
             if(MODEL_INPUTS[0] == null)
             {
-                MODEL_INPUTS[0] = NamedOnnxValue.CreateFromTensor("image", input);
+                MODEL_INPUTS[0] = NamedOnnxValue.CreateFromTensor("input_1", input);
+                MODEL_INPUTS.Add(NamedOnnxValue.CreateFromTensor("image_shape", (new [] {(float)input_dimension, (float)input_dimension}).ToTensor().Reshape(new int[] {1, 2})));
             }
             else
                 MODEL_INPUTS[0].Value = input;
 
-            using IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = inferenceSession.Run(MODEL_INPUTS);
             // Postprocess to get predictions
+            using IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = inferenceSession.Run(MODEL_INPUTS);
             var resultsArray = results.ToArray();
             var boxes = resultsArray[0].AsTensor<float>();
-            var labels = resultsArray[1].AsTensor<long>();
-            var confidences = resultsArray[2].AsTensor<float>();
+            var confidences = resultsArray[1].AsTensor<float>();
+            var indices = resultsArray[2].AsTensor<int>();
+            
             var prediction = new ObjectDetectorPrediction(frame.Clone());
-            Parallel.For(0, boxes.Length / 4, (i, s) =>
+
+            Parallel.For(0, indices.Dimensions[1], (i,s) =>
             {
-                var idx = (int)i; // WHY COMPILER, WHY?
-                if (confidences[idx] >= minScore)
-                {
-                    var j = idx * 4;
-                    prediction.AddDetectedObject(
-                        new ObjectClass(LabelMap.Labels[labels[idx]], confidences[idx]),
-                        new Rect((int)boxes[j], (int)boxes[j + 1], (int)boxes[j + 2], (int)boxes[j + 3])
-                    );
-                }
+                var batch_idx = indices[new [] {i, 0}];
+                var class_idx = indices[new [] {i, 1}];
+                var box_idx = indices[new [] {i, 2}];
+                prediction.AddDetectedObject(
+                    new ObjectClass(LabelMap.Labels[class_idx], confidences[new [] {batch_idx, class_idx, box_idx}]),
+                    new Rect(
+                        (int)boxes[new [] {0, box_idx, 0}],
+                        (int)boxes[new [] {0, box_idx, 1}], 
+                        (int)boxes[new [] {0, box_idx, 2}], 
+                        (int)boxes[new [] {0, box_idx, 3}])
+                );
             });
 
             return prediction;
